@@ -112,24 +112,23 @@ impl<'c> CharArr<'c> {
     }
 }
 
-fn write_image_buffer(image_buffer: &GrayImage, out: &mut dyn Write) -> Result<()> {
-    let mut buf: String = String::with_capacity(
-        image_buffer.width() as usize * image_buffer.height() as usize
-            + (2 * image_buffer.height()) as usize,
-    );
+fn write_image_buffer(image_buffer: &GrayImage, out: &mut impl Write) -> Result<()> {
+    let bh = image_buffer.height();
+    let bw = image_buffer.width();
+    let mut buf: String = String::with_capacity(bw as usize * bh as usize + (2 * bh) as usize);
 
-    for y in 0..image_buffer.height() {
+    for y in 0..bh {
         // this flips the image
-        for x in (0..image_buffer.width()).rev() {
+        for x in (0..bw).rev() {
             let pixel = image::ImageBuffer::get_pixel(image_buffer, x, y).0;
-            let meta = CharArr::new(
+            let metadata = CharArr::new(
                 // the extra char is to avoid floating point arithmetic and won't be displayed
                 &[
                     ' ', ' ', ' ', '.', ':', '-', '=', '+', '*', '#', '%', '@', '?',
                 ],
                 pixel[0],
             );
-            let c = CharArr::get_char(meta);
+            let c = CharArr::get_char(metadata);
             buf.push(c);
         }
         buf.push('\r');
