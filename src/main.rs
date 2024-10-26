@@ -40,7 +40,6 @@ fn write_image_buffer(image_buffer: &GrayImage, out: &mut dyn Write) -> Result<(
         // this flips the image
         for x in (0..image_buffer.width()).rev() {
             let pixel = image::ImageBuffer::get_pixel(image_buffer, x, y).0;
-
             let meta = CharArr::new(
                 // the extra char is to avoid floating point arithmetic and won't be displayed
                 &[
@@ -50,7 +49,6 @@ fn write_image_buffer(image_buffer: &GrayImage, out: &mut dyn Write) -> Result<(
             );
 
             let c = CharArr::get_char(meta);
-
             buf.push(c);
         }
 
