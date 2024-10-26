@@ -16,31 +16,19 @@ use v4l::{
 
 struct CharArr<'c> {
     charset: &'c [char],
+    pixel: u8,
 }
 
 impl<'c> CharArr<'c> {
-    fn new(charset: &'c [char]) -> Self {
-        Self { charset }
+    fn new(charset: &'c [char], pixel: u8) -> Self {
+        Self { charset, pixel }
     }
 
-    fn get_char(self, l: u8) -> char {
-        let idx: usize = (l as usize * (self.charset.len() - 1)) / 255_usize;
+    fn get_char(self) -> char {
+        let idx: usize = (self.pixel as usize * (self.charset.len() - 1)) / 255_usize;
         self.charset[idx]
     }
 }
-
-// // the extra char is to avoid floating point arithmetic and won't be displayed
-// const CHARSET: &[char] = &[
-//     ' ', ' ', ' ', '.', ':', '-', '=', '+', '*', '#', '%', '@', '?',
-// ];
-
-// const fn get_char(l: u8) -> char {
-//     // this should always truncate which means the last char in CHARSET won't be reached
-//     // this is done to avoid floating point arithmetic, which is expensive
-//     let idx: usize = (l as usize * (CHARSET.len() - 1)) / 255_usize;
-
-//     CHARSET[idx]
-// }
 
 fn write_image_buffer(image_buffer: &GrayImage, out: &mut dyn Write) -> Result<()> {
     let mut buf: String = String::with_capacity(
@@ -53,12 +41,15 @@ fn write_image_buffer(image_buffer: &GrayImage, out: &mut dyn Write) -> Result<(
         for x in (0..image_buffer.width()).rev() {
             let pixel = image::ImageBuffer::get_pixel(image_buffer, x, y).0;
 
-            let l = pixel[0];
-            let char_arr = CharArr::new(&[
-                ' ', ' ', ' ', '.', ':', '-', '=', '+', '*', '#', '%', '@', '?',
-            ]);
+            let meta = CharArr::new(
+                // the extra char is to avoid floating point arithmetic and won't be displayed
+                &[
+                    ' ', ' ', ' ', '.', ':', '-', '=', '+', '*', '#', '%', '@', '?',
+                ],
+                pixel[0],
+            );
 
-            let c = CharArr::get_char(char_arr, l);
+            let c = CharArr::get_char(meta);
 
             buf.push(c);
         }
